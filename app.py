@@ -15,6 +15,12 @@ app = Flask(__name__)
 
 GITHUB_API = "https://api.github.com/repos"
 
+# ✅ REQUIRED FOR RENDER / CLOUD
+GITHUB_HEADERS = {
+    "Accept": "application/vnd.github+json",
+    "User-Agent": "GitGrade-Hackathon-App"
+}
+
 # ---------- FRONTEND ----------
 @app.route("/")
 def home():
@@ -30,7 +36,6 @@ def analyze_repo(repo_url):
             return None
 
         parts = repo_url.replace("https://github.com/", "").split("/")
-
         if len(parts) < 2:
             return None
 
@@ -39,15 +44,26 @@ def analyze_repo(repo_url):
     except:
         return None
 
-    repo_data = requests.get(f"{GITHUB_API}/{owner}/{repo}").json()
-    contents = requests.get(f"{GITHUB_API}/{owner}/{repo}/contents").json()
-    commits = requests.get(f"{GITHUB_API}/{owner}/{repo}/commits").json()
+    repo_data = requests.get(
+        f"{GITHUB_API}/{owner}/{repo}",
+        headers=GITHUB_HEADERS
+    ).json()
 
     if "message" in repo_data:
         return None
 
-    files = [c["name"].lower() for c in contents if c["type"] == "file"]
-    folders = [c["name"].lower() for c in contents if c["type"] == "dir"]
+    contents = requests.get(
+        f"{GITHUB_API}/{owner}/{repo}/contents",
+        headers=GITHUB_HEADERS
+    ).json()
+
+    commits = requests.get(
+        f"{GITHUB_API}/{owner}/{repo}/commits",
+        headers=GITHUB_HEADERS
+    ).json()
+
+    files = [c["name"].lower() for c in contents if c.get("type") == "file"]
+    folders = [c["name"].lower() for c in contents if c.get("type") == "dir"]
 
     return {
         "has_readme": any("readme" in f for f in files),
