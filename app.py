@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify, send_from_directory
 import requests
 import os
 
-# ---------- OPTIONAL OPENAI (SAFE) ----------
+# ---------- OPTIONAL OPENAI (SAFE FALLBACK) ----------
 try:
     from openai import OpenAI
     client = OpenAI()
@@ -24,7 +24,18 @@ def home():
 # ---------- CORE ANALYSIS ----------
 def analyze_repo(repo_url):
     try:
-        owner, repo = repo_url.replace("https://github.com/", "").split("/")
+        # Clean and normalize URL
+        repo_url = repo_url.strip().replace(".git", "")
+        if not repo_url.startswith("https://github.com/"):
+            return None
+
+        parts = repo_url.replace("https://github.com/", "").split("/")
+
+        if len(parts) < 2:
+            return None
+
+        owner = parts[0]
+        repo = parts[1]
     except:
         return None
 
@@ -63,7 +74,7 @@ def calculate_score(data):
     return score, level, breakdown
 
 
-# ---------- AI REVIEW (CLEAN BULLET POINTS) ----------
+# ---------- AI REVIEW (CLEAN BULLETS) ----------
 def ai_code_review(data):
     if not OPENAI_ENABLED:
         return "- AI review unavailable (OpenAI not configured)."
@@ -72,12 +83,9 @@ def ai_code_review(data):
         prompt = f"""
 You are a senior software engineer reviewing a GitHub repository.
 
-Return a SHORT review in BULLET POINTS.
-Rules:
-- 4 to 5 bullets only
-- One clear point per bullet
-- No paragraphs
-- No extra explanations
+Return 4–5 BULLET POINTS only.
+Each bullet should be short and clear.
+No paragraphs.
 
 Analysis:
 - README present: {data['has_readme']}
@@ -86,8 +94,6 @@ Analysis:
 - Commit count: {data['commit_count']}
 - Folder count: {data['folder_count']}
 - File count: {data['file_count']}
-
-Focus on strengths and improvements.
 """
 
         response = client.responses.create(
