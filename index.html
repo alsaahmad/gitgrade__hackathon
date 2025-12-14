@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GitHub Repo Analyzer 💕</title>
+
+  <style>
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(135deg, #fbcfe8, #f9a8d4);
+      color: #4a044e;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .box {
+      background: #fff1f2;
+      padding: 32px;
+      border-radius: 20px;
+      width: 460px;
+      box-shadow: 0 25px 50px rgba(236, 72, 153, 0.35);
+      border: 2px solid #f9a8d4;
+    }
+
+    h2 {
+      text-align: center;
+      color: #be185d;
+      margin-bottom: 20px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 12px;
+      border: 2px solid #f9a8d4;
+      outline: none;
+      font-size: 14px;
+    }
+
+    input:focus {
+      border-color: #ec4899;
+      box-shadow: 0 0 0 2px rgba(236, 72, 153, 0.3);
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 12px;
+      border-radius: 999px;
+      border: none;
+      font-size: 15px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .primary {
+      background: #ec4899;
+      color: white;
+    }
+
+    .primary:hover {
+      background: #db2777;
+      transform: translateY(-1px);
+    }
+
+    .secondary {
+      background: #f9a8d4;
+      color: #831843;
+    }
+
+    .secondary:hover {
+      background: #f472b6;
+    }
+
+    .result {
+      margin-top: 22px;
+      font-size: 14px;
+      line-height: 1.5;
+      background: #ffe4e6;
+      padding: 15px;
+      border-radius: 14px;
+      border: 1px dashed #f472b6;
+    }
+
+    ul {
+      padding-left: 18px;
+    }
+
+    li {
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="box">
+  <h2>GitHub Repo Analyzer </h2>
+
+  <input
+    id="repoUrl"
+    placeholder="https://github.com/username/repo"
+  >
+
+  <button class="primary" onclick="analyze()">✨ Analyze Repo</button>
+
+  <div class="result" id="result"></div>
+</div>
+
+<script>
+async function analyze() {
+  const repoUrl = document.getElementById("repoUrl").value;
+  const result = document.getElementById("result");
+
+  if (!repoUrl) {
+    result.innerHTML = "💔 Please enter a GitHub repository URL";
+    return;
+  }
+
+  result.innerHTML = "🌸 Analyzing… please wait";
+
+  try {
+    const res = await fetch("http://127.0.0.1:5000/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ repo_url: repoUrl })
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      result.innerHTML = "❌ " + data.error;
+      return;
+    }
+
+    result.innerHTML = `
+      <strong>🌟 Level:</strong> ${data.level}<br>
+      <strong>🎯 Total Score:</strong> ${data.score}/100<br><br>
+
+      <strong>📊 Score Breakdown:</strong>
+      <ul>
+        ${Object.entries(data.breakdown)
+          .map(([k,v]) => `<li>💗 ${k}: ${v}</li>`)
+          .join("")}
+      </ul>
+
+      <strong>🤖 AI Review:</strong>
+      <pre style="white-space:pre-wrap;font-family:inherit;">
+${data.ai_review}
+      </pre>
+
+      <button class="primary" onclick="copyResult()">📋 Copy Result</button>
+      <button class="secondary" onclick="resetAll()">🔄 Reset</button>
+    `;
+  } catch (err) {
+    result.innerHTML = "💥 Backend not reachable";
+  }
+}
+
+function copyResult() {
+  navigator.clipboard.writeText(
+    document.getElementById("result").innerText
+  );
+  alert("✨ Copied to clipboard!");
+}
+
+function resetAll() {
+  document.getElementById("repoUrl").value = "";
+  document.getElementById("result").innerHTML = "";
+}
+</script>
+
+</body>
+</html>
