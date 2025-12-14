@@ -1,5 +1,5 @@
 # gitgrade__hackathon
-💖 GitGrade – GitHub Repo Analyzer
+GitGrade – GitHub Repo Analyzer
 
 GitGrade is a web-based GitHub repository analyzer that evaluates the quality of a repository based on real-world engineering signals such as documentation, testing, CI setup, commit history, and project structure.
 It also provides an AI-generated review with clear bullet-point feedback.
@@ -24,11 +24,28 @@ Beginner / Intermediate / Advanced
 
 
 🛠️ Tech Stack
-
 Backend: Python, Flask
-
 Frontend: HTML, CSS, JavaScript
-
 APIs: GitHub REST API, OpenAI API
-
 Deployment: Render
+
+
+
+
+
+
+🖥️ How It Works
+User enters a GitHub repository URL
+Backend fetches repository data using GitHub API
+Repository is evaluated using predefined engineering rules
+AI generates a short, professional code review
+Results are displayed instantly on the web interface
+
+
+
+
+
+👩‍💻 Author
+
+Built by Alsa
+For GitGrade Hackathon
