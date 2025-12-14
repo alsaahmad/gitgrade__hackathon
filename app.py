@@ -15,11 +15,15 @@ app = Flask(__name__)
 
 GITHUB_API = "https://api.github.com/repos"
 
-# ✅ REQUIRED FOR RENDER / CLOUD
+# ---------- GITHUB API HEADERS (FIXES RENDER ISSUES) ----------
 GITHUB_HEADERS = {
     "Accept": "application/vnd.github+json",
     "User-Agent": "GitGrade-Hackathon-App"
 }
+
+# 🔑 Optional GitHub token (fixes rate limits on Render)
+if os.environ.get("GITHUB_TOKEN"):
+    GITHUB_HEADERS["Authorization"] = f"token {os.environ.get('GITHUB_TOKEN')}"
 
 # ---------- FRONTEND ----------
 @app.route("/")
@@ -44,6 +48,7 @@ def analyze_repo(repo_url):
     except:
         return None
 
+    # Repo metadata
     repo_data = requests.get(
         f"{GITHUB_API}/{owner}/{repo}",
         headers=GITHUB_HEADERS
@@ -52,11 +57,13 @@ def analyze_repo(repo_url):
     if "message" in repo_data:
         return None
 
+    # Repo contents
     contents = requests.get(
         f"{GITHUB_API}/{owner}/{repo}/contents",
         headers=GITHUB_HEADERS
     ).json()
 
+    # Commit history
     commits = requests.get(
         f"{GITHUB_API}/{owner}/{repo}/commits",
         headers=GITHUB_HEADERS
